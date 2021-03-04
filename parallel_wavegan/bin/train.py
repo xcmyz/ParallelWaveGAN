@@ -19,6 +19,8 @@ import soundfile as sf
 import torch
 import yaml
 
+import numpy as np
+
 from tensorboardX import SummaryWriter
 from torch.utils.data import DataLoader
 from tqdm import tqdm
@@ -164,6 +166,7 @@ class Trainer(object):
         #######################
         #      Generator      #
         #######################
+        np.save("data.npy", x[0].detach().cpu().numpy())
         y_ = self.model["generator"](*x)
 
         # reconstruct the signal from multi-band signal
@@ -709,8 +712,8 @@ def main():
     if args.train_wav_scp is None or args.dev_wav_scp is None:
         if config["format"] == "hdf5":
             audio_query, mel_query = "*.h5", "*.h5"
-            audio_load_fn = lambda x: read_hdf5(x, "wave")  # NOQA
-            mel_load_fn = lambda x: read_hdf5(x, "feats")  # NOQA
+            def audio_load_fn(x): return read_hdf5(x, "wave")  # NOQA
+            def mel_load_fn(x): return read_hdf5(x, "feats")  # NOQA
         elif config["format"] == "npy":
             audio_query, mel_query = "*-wave.npy", "*-feats.npy"
             audio_load_fn = np.load
